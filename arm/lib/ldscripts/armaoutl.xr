@@ -1,0 +1,23 @@
+/* Script for ld -r: link without relocation */
+OUTPUT_FORMAT("a.out-arm-little")
+OUTPUT_ARCH(arm)
+SECTIONS
+{
+  .text    :
+  {
+    CREATE_OBJECT_SYMBOLS
+    *(.text)
+  }
+  .data  :
+  {
+    *(.data)
+  }
+  .bss  :
+  {
+   ;
+   *(.bss)
+   *(COMMON)
+   ;
+   ;
+  }
+}
