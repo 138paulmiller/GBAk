@@ -84,6 +84,11 @@ int sprite_index = 0;
 	Loads sprite image into vram. 
 */
 void sprite_load_img(struct sprite_img img){
+	memcpy((unsigned short*) palette_sprite, (unsigned short*) img.palette, PALETTE_SIZE);
+
+    /* load the image into char block 0 */
+    memcpy((unsigned short*) sprite_image_block, (unsigned short*) img.data, (img.width * img.height) / 2);
+/*
 	for(int i=0; i< PALETTE_SIZE; i++){
 		palette_sprite[i] = img.palette[i];
 	}
@@ -100,7 +105,9 @@ void sprite_load_img(struct sprite_img img){
 			}
 		}
 	}
+*/
 }
+
 
 /*
 	Sets sprite attribute in vram 
@@ -180,16 +187,18 @@ void sprite_move_by(struct sprite* sprite, int dx, int dy) {
 }
 
 // clear all sprites data 
-void sprite_clear() {
+void sprite_clear_all() {
     /* clear the index counter */
     sprite_index = 0;
     /* move all sprites offscreen to hide them */
     for(int i = 0; i < SPRITE_NUM; i++) {
-        sprites[i].attr0 = SCREEN_HEIGHT;
-        sprites[i].attr1 = SCREEN_WIDTH;
+        sprites[i].attr0 = (SCREEN_HEIGHT & 0xff);
+        sprites[i].attr1 = (SCREEN_WIDTH& 0x1ff);
     }
 }
-
+void sprite_update_all() {
+    memcpy((unsigned short*) sprite_attribute_block, (unsigned short*) sprites, SPRITE_NUM * 4);
+}
 #endif
 
 

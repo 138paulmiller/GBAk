@@ -91,13 +91,12 @@ volatile short* bg3_y_scroll = (volatile short*) 0x400001e;
  	- sprite palette is at 0500:0200h
 	- 0x0200 is 256 bytes
 */
-
 volatile unsigned short* palette_background = (volatile unsigned short*) 0x05000000;
 volatile unsigned short* palette_sprite 	= (volatile unsigned short*) 0x05000200;
+
 /* address where sprite image data is stored */
 volatile unsigned short* sprite_image_block = (volatile unsigned short*) 0x6010000;
-volatile unsigned short* sprite_attribute_memory = (volatile unsigned short*) 0x7000000;
-
+volatile unsigned short* sprite_attribute_block = (volatile unsigned short*) 0x7000000;
 
 /* the button register holds the bits which indicate whether each button has
  * been pressed - this has got to be volatile as well
