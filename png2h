@@ -12,7 +12,6 @@ if [ $# -gt 1 ]; then
 		DIR=$(dirname $IMG) 
 		BASE=$(basename $IMG)
 		cd $DIR
-		echo ${PWD}
 		# gen header file
 		if [ -t $(sudo $P2G -t -p $BASE) ]; then
 			# substitute .png ext with .h 

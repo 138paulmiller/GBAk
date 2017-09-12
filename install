@@ -30,21 +30,27 @@ echo $'#!/bin/bash
 # generated header file into the include directory	
 # DO NOT move this script without updating location of PNG2GBA	
 if [ $# -gt 1 ]; then	
-	HOME=${PWD};	
-	DEST=$HOME/$1;
+	WD=${PWD};	
+	P2G=$WD/tools/png2gba/png2gba 
+	DEST=$WD/$1;
 	for IMG in ${@:2}; do
-		cd $(dirname $IMG);
+		# move to avoid directory in header vars
+		DIR=$(dirname $IMG) 
 		BASE=$(basename $IMG)
+		cd $DIR
+		echo ${PWD}
 		# gen header file
-		$PNG2GBA -t -p $BASE;
-		# substitute .png ext with .h 
-		HEADER=$(echo $BASE | sed -e "s/.png/.h/g")
-		mv $HEADER $DEST
-		echo generated $HEADER into $DEST		
-		cd $HOME	
+		if [ -t $(sudo $P2G -t -p $BASE) ]; then
+			# substitute .png ext with .h 
+			HEADER=$(sudo echo $BASE | sed -e "s/.png/.h/g")
+			sudo mv $HEADER $DEST
+			echo Converted $DIR/$BASE to $DEST/$HEADER		
+		else
+			echo "FAILED"
+		fi
 	done;
 else
- echo Usage ./gen_img destination img0.png [img1.png ... ]
+ echo Usage ./png2h destination img0.png [img1.png ... ]
 fi' > png2h
 sudo chmod +x png2h
 echo $'gbak Tools

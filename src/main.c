@@ -3,10 +3,12 @@
 #include <bg.h>
 #include <sprite.h>
 
-#include <img/sprite0.h>
 #include <img/bg_img0.h>
 #include <img/map_data0.h>
 #include <img/map_data1.h>
+
+
+#include <img/sprite0_img.h>
 
 int main( ) { 
     *display_control = MODE0 | BG0 | BG1 | SPRITE_ENABLE | SPRITE_MAP_1D;
@@ -16,7 +18,7 @@ int main( ) {
 	struct bg_map map1 = 	(struct bg_map)	{map_data1, map_data1_width, map_data1_height};
 	
 	
-	struct sprite_img sprite_img0 = (struct sprite_img) {sprite0_data, sprite0_palette, sprite0_width, sprite0_height, 2}; //2 frames
+	struct sprite_img sprite_img0 = (struct sprite_img) {sprite0_img_data, sprite0_img_palette, sprite0_img_width, sprite0_img_height, 2}; //2 frames
 	struct sprite *sprite0;  //points to a sprite in sprites.h sprite_array
 	//init bg
 	bg_load(bg0, 0);
