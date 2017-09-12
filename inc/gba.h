@@ -2,8 +2,8 @@
 #define GBA_H
 
 #include <string.h>
-#define WIDTH 240
-#define HEIGHT 160
+#define SCREEN_WIDTH 240
+#define SCREEN_HEIGHT 160
 //Display Control flags
 // tile modes 
 #define MODE0 0x00
@@ -16,17 +16,7 @@
 // Max number of colors in palette block
 #define PALETTE_SIZE 256
 
-// background enable flags used in display control
-#define BG0 0x100
-#define BG1 0x200
-#define BG2 0x400
-#define BG3 0x800
 
-//256 color mode
-#define COLOR_MODE 1 
-//Bacground wrap flags
-#define BG_WRAP 1
-#define BG_NO_WRAP 0 
 
 
 
@@ -106,6 +96,7 @@ volatile unsigned short* palette_background = (volatile unsigned short*) 0x05000
 volatile unsigned short* palette_sprite 	= (volatile unsigned short*) 0x05000200;
 /* address where sprite image data is stored */
 volatile unsigned short* sprite_image_block = (volatile unsigned short*) 0x6010000;
+volatile unsigned short* sprite_attribute_memory = (volatile unsigned short*) 0x7000000;
 
 
 /* the button register holds the bits which indicate whether each button has
@@ -150,7 +141,7 @@ inline unsigned short get_color(unsigned char r, unsigned char g, unsigned char 
 	position (x, y) is accessed at screen[y*w+x] 
 */
 inline void put_pixel(int row, int col, unsigned short color) {
-	vram[row * WIDTH + col] = color;
+	vram[row * SCREEN_WIDTH + col] = color;
 }
 
 

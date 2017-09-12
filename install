@@ -1,6 +1,16 @@
 #!/bin/bash
 # Paul Miller
-#Installs GBA Map Editing Tools created by Ian Finlayson
+#
+# Installs:
+# - GBAk path to home bashrc
+# - Creates a script to generate multiple PNGs into a directory (png2h)
+# - Tools by Ian Finlayson
+# 	- GBA Map Editor (gba-tileeditor)
+#	- Png to Header utilitty (png2gba)
+GBAK=$(pwd)
+if [ -z "$GBAK" ]; then
+	sudo echo export $GBAK >> ~/.bashrc
+fi
 mkdir $GBAK/tools 
 cd $GBAK/tools
 git clone https://github.com/IanFinlayson/gba-tileeditor.git
@@ -21,7 +31,6 @@ echo $'#!/bin/bash
 # DO NOT move this script without updating location of PNG2GBA	
 if [ $# -gt 1 ]; then	
 	HOME=${PWD};	
-	PNG2GBA=$GBAK/tools/png2gba/png2gba;	
 	DEST=$HOME/$1;
 	for IMG in ${@:2}; do
 		cd $(dirname $IMG);
@@ -37,7 +46,7 @@ if [ $# -gt 1 ]; then
 else
  echo Usage ./gen_img destination img0.png [img1.png ... ]
 fi' > png2h
-chmod +x png2h
+sudo chmod +x png2h
 echo $'gbak Tools
 - Tile editor to create C arrays from an image
 	./gba-tileeditor/gba-tileeditor

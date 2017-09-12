@@ -1,8 +1,13 @@
 
 #include <gba.h>
-#ifndef IMG_H
-#define IMG_H
+#ifndef BG_H
+#define BG_H
 
+/*
+	Contains Background and Background Image Utilities
+
+*/
+//Bacground size properties (number of tiles)
 #define BG_32x32 0 
 #define BG_64x32 1
 #define BG_32x64 2
@@ -11,6 +16,30 @@
 #define BG_32x32_AFFINE 1
 #define BG_64x64_AFFINE 2
 #define BG_128x128_AFFINE 3
+
+
+//Tile size properties
+#define TILE_REG_32x32 0 
+#define TILE_REG_64x32 1
+#define TILE_REG_32x64 2
+#define TILE_REG_64x64 3
+#define TILE_AFF_16x16 0 
+#define TILE_AFF_32x32 1
+#define TILE_AFF_64x64 2
+#define TILE_AFF_128x128 3
+
+// background enable flags used in display control
+#define BG0 0x100
+#define BG1 0x200
+#define BG2 0x400
+#define BG3 0x800
+
+//256 color mode
+#define COLOR_MODE 1 
+//Bacground wrap flags
+#define BG_WRAP 1
+#define BG_NO_WRAP 0 
+
 
 /*--------------------------Background Utilities---------------------------------
 	load_image and load_map are used to load background information into VRAM
@@ -33,7 +62,7 @@ struct bg
 	unsigned int height;	 
 };
 
-struct map
+struct bg_map
 {	
 	const unsigned short* data; //array of indices corresponding to tiles in char block
 	//dimensions of array
@@ -54,7 +83,7 @@ struct map
 	mosaic			: if set, adds mosaic effect	
 */
 
-inline void set_bg(volatile unsigned short *bg_control, unsigned int char_block_n, unsigned int screen_block_n,
+inline void bg_set(volatile unsigned short *bg_control, unsigned int char_block_n, unsigned int screen_block_n,
 							unsigned short size, unsigned short priority, unsigned short wrap)
 {
 	*bg_control = priority 
@@ -69,7 +98,7 @@ inline void set_bg(volatile unsigned short *bg_control, unsigned int char_block_
 	load_image
 		loads image palette and data into vram at the nth character block (0-3)
 */
-inline void load_bg(struct bg bg, unsigned int char_block_n)
+inline void bg_load(struct bg bg, unsigned int char_block_n)
 {
 	//load the palette data into memory
 	for(int i=0; i < PALETTE_SIZE; i++){
@@ -93,7 +122,7 @@ inline void load_bg(struct bg bg, unsigned int char_block_n)
 	Loads the map from the tiles in the background screen_block
 */
 
-inline void load_map(struct map map, unsigned int screen_block_n)
+inline void bg_map_load(struct bg_map map, unsigned int screen_block_n)
 {
 
 	unsigned short* block = screen_block(screen_block_n); 
@@ -105,5 +134,6 @@ inline void load_map(struct map map, unsigned int screen_block_n)
 	//memcpy((unsigned short*) screen_block(screen_block_n), map.data, (map.width * map.height));
 
 }
+
 #endif
 

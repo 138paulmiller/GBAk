@@ -5,7 +5,6 @@
 # DO NOT move this script without updating location of PNG2GBA	
 if [ $# -gt 1 ]; then	
 	HOME=${PWD};	
-	PNG2GBA=$GBAK/tools/png2gba/png2gba;	
 	DEST=$HOME/$1;
 	for IMG in ${@:2}; do
 		cd $(dirname $IMG);

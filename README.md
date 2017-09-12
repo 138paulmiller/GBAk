@@ -13,10 +13,8 @@ the GBA hardware and all credit goes to the authors!
 
 #### Setup Environment
 The install script downloads and makes map editing tools created by github.com/IanFinlayson. 
-###### Set GBAK variable
-	sudo echo export GBAK=/path/to/gbak >> .bashrc
 ###### Install tools
-	./install
+	sudo ./install
 ###### Download emulator (gvba)
 	sudo apt-get install visualboyadvance
 
