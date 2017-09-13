@@ -100,22 +100,22 @@ inline void bg_set(volatile unsigned short *bg_control, unsigned int char_block_
 */
 inline void bg_load(struct bg bg, unsigned int char_block_n)
 {
-	//load the palette data into memory
-	for(int i=0; i < PALETTE_SIZE; i++){
-		palette_background[i]= bg.palette[i];
-	}
-	//read image data as shorts, vram addr are shorts, 2 bytes
-	unsigned short* data = (unsigned short*)bg.img_data;
-	//get the address of the character block to use
-	unsigned short* block = char_block(char_block_n);
-	//image data is an array of chars(1byte) but read as an array of shorts(2bytes). 
-	//	(short array is half the length ) so divide char length by 2
-	unsigned int len  =((bg.width * bg.height) / 2);
-	for (int i = 0; i < len; i++) {
-		block[i] = data[i];
-	}
-	//memcpy(palette_background, image.palette, PALETTE_SIZE*sizeof(short));
-	//memcpy(char_block(char_block_n), (unsigned short*)image.data, (image.width * image.height)*sizeof(short));
+	// //load the palette data into memory
+	// for(int i=0; i < PALETTE_SIZE; i++){
+	// 	palette_background[i]= bg.palette[i];
+	// }
+	// //read image data as shorts, vram addr are shorts, 2 bytes
+	// unsigned short* data = (unsigned short*)bg.img_data;
+	// //get the address of the character block to use
+	// unsigned short* block = char_block(char_block_n);
+	// //image data is an array of chars(1byte) but read as an array of shorts(2bytes). 
+	// //	(short array is half the length ) so divide char length by 2
+	// unsigned int len  =((bg.width * bg.height) / 2);
+	// for (int i = 0; i < len; i++) {
+	// 	block[i] = data[i];
+	// }
+	memcpy_dma16((unsigned short*)palette_background, (unsigned short*)bg.palette, PALETTE_SIZE*sizeof(short));
+	memcpy_dma16((unsigned short*)char_block(char_block_n), (unsigned short*)bg.img_data, (bg.width * bg.height)*sizeof(short));
 }
 
 /*
@@ -125,13 +125,13 @@ inline void bg_load(struct bg bg, unsigned int char_block_n)
 inline void bg_map_load(struct bg_map map, unsigned int screen_block_n)
 {
 
-	unsigned short* block = screen_block(screen_block_n); 
-	//loads tile index data into screen block
-	unsigned int len  =(map.width * map.height);
-	for (int i=0; i < len; i++){
-		block[i] = map.data[i];
-	}
-	//memcpy((unsigned short*) screen_block(screen_block_n), map.data, (map.width * map.height));
+	// unsigned short* block = screen_block(screen_block_n); 
+	// //loads tile index data into screen block
+	// unsigned int len  =(map.width * map.height);
+	// for (int i=0; i < len; i++){
+	// 	block[i] = map.data[i];
+	// }
+	memcpy_dma16((unsigned short*) screen_block(screen_block_n), (unsigned short*)map.data, (map.width * map.height));
 
 }
 

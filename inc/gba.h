@@ -176,8 +176,32 @@ inline unsigned short* screen_block(unsigned long block_n){
 	//calculate distance from base vram addr
 	return ( unsigned short*)(0x06000000+ block_n*0x800); //0x800 = 2 kb
 }
+//--------------------------DMA Data Format------------------------------------- 
 
+/* flag for turning on DMA */
+#define DMA_ENABLE 0x80000000
+
+/* flags for the sizes to transfer, 16 or 32 bits */
+#define DMA_16 0x00000000
+#define DMA_32 0x04000000
+/* pointer to the DMA source location */
+volatile unsigned int* dma_source = ( unsigned int*) 0x40000D4;
+
+/* pointer to the DMA destination location */
+volatile unsigned int* dma_destination = ( unsigned int*) 0x40000D8;
+
+/* pointer to the DMA count/control */
+volatile unsigned int* dma_count = ( unsigned int*) 0x40000DC;
+
+/* copy data using DMA format */
+void memcpy_dma16(unsigned short* dest, unsigned short* source, int amount) {
+    *dma_source = (unsigned int) source;
+    *dma_destination = (unsigned int) dest;
+    *dma_count = amount | DMA_16 | DMA_ENABLE;
+}
 //--------------------------Miscellaneous------------------------------------- 
+
+
 /* wait for the screen to be in vblank, finished drawing */
 inline void vblank_wait( ) {
     /* wait until all 160 lines have been updated */
