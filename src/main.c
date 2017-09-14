@@ -23,8 +23,9 @@ int main( ) {
 	struct bg_map map1 = 	(struct bg_map)	{map_data1, map_data1_width, map_data1_height};
 	
 	
-	struct sprite_img sprite_img0 = (struct sprite_img) {sprite0_img_data, sprite0_img_palette, sprite0_img_width, sprite0_img_height, 2}; //2 frames
-	struct sprite sprite0;
+	struct sprite_img sprite_img0 = (struct sprite_img) {sprite0_img_data, sprite0_img_palette, 
+														sprite0_img_width, sprite0_img_height};
+	struct sprite sprite_player;
 	//init bg
 	bg_load(bg0, 0);
 	bg_map_load(map0, 8);
@@ -35,68 +36,60 @@ int main( ) {
 
 	//init sprites
 	sprite_clear_all(); //clear memory
-
 	sprite_load_img(sprite_img0);
-	sprite_init(&sprite0, sprite_make_attr(SPRITE_16_32, 0), 16);
-	sprite_set_pos(&sprite0, SCREEN_WIDTH/2, SCREEN_HEIGHT/2);
+	sprite_init(&sprite_player, sprite_make_attr(SPRITE_16_32, 0), 16, 2); //2 16 bit frames
+	sprite_player.x = SCREEN_WIDTH/2;
+    sprite_player.y = SCREEN_HEIGHT/2;
+  	sprite_player.is_moving = 1;
+	sprite_update(&sprite_player);
+
     float delta = 0;
-	float vel_x=0, acc_x=0.65, friction_x = 0.003;
 	//main loop
-	int scrollx=0;
-	int scrolly=0;   
+	int bg_offset_x=0;
+	int bg_offset_y=0;   
 	while (1)
 	{
-		clock_start = clock();
 		vblank_wait();
+		clock_start = clock();
+
+		sprite_player.is_moving = 0;
 		/* scroll with the arrow keys */
         if (button_pressed(BUTTON_DOWN)) {
         }
         if (button_pressed(BUTTON_UP)) {
         }
+        //left right directional
         if (button_pressed(BUTTON_RIGHT)) {
-        	if( sprite0.x > SCREEN_WIDTH-BORDER){	
-				scrollx++;
+			sprite_flip(&sprite_player, 0, 0);
+	      	sprite_player.is_moving = 1;
+        	if( sprite_player.x > SCREEN_WIDTH-BORDER){	
+				bg_offset_x++;
 			}
 			else{
-	    		sprite_flip(&sprite0, 0, 0);
-	    		//clamp to 0,1
-				if(vel_x > 1) vel_x = 1;
-				else if(vel_x < 0) vel_x = 0;
-				else vel_x+=acc_x;
-	        	sprite_move_by(&sprite0,vel_x, 0);
-        	}
+	    		sprite_player.x ++;
+	        }
         }
         if (button_pressed(BUTTON_LEFT)) {
-        	//update bg
-	        if(sprite0.x < BORDER){
-	            scrollx--;
+        	sprite_flip(&sprite_player, 1, 0);
+		    sprite_player.is_moving = 1;
+	        if(sprite_player.x < BORDER){
+	            bg_offset_x--;
 	        }
 	        else{
-	    		sprite_flip(&sprite0, 1, 0);
-	    		//clamp to -1,0
-	    		if(vel_x < -1) vel_x = -1;
-	    		else if(vel_x > 0) vel_x = 0;
-	    		else vel_x-=acc_x;
+	    		sprite_player.x --;
 
-	        	sprite_move_by(&sprite0,vel_x, 0);
 			}
-		}
-		else
-		{
-			vel_x+= -vel_x*friction_x;
-		}
 
-      
-
+		}
+		sprite_update(&sprite_player);
 
 		//update bg
-		*bg0_x_scroll = scrollx;
-    	*bg0_y_scroll = scrolly;
+    	bg_set_scroll(0,  bg_offset_x,  bg_offset_y);
 		//update sprites
 		sprite_update_all() ;
 		// delta = clock() - clock_start; 
-		if(delta < 10)
-			delay(10-delta);	
+		if(delta < 50)
+			delay(50-delta);	
 
 	} //wait
 }

@@ -49,42 +49,7 @@ volatile unsigned short* display_status = (volatile unsigned short*) 0x04000004;
  	Waiting for value to reach 160 (vblank) before updating can sync display to 60 fps (Hz). 
 */
 volatile unsigned short* scan_vcount = (volatile unsigned short*) 0x04000006;
-/*
-	Background control registers (2 bytes so short)
 
-	Bits   |F E  | D    |C B A 9 8 |7   |6	 |5 4	| 3 2	| 1 0
-	Field  |Size |Wrap  |SBB 	   |CM  |Mos | 	~ 	| CBB 	| P	
-	
-	Size:		Regular		Affine 	(tile wxh)
-		0 	 	32x32 		16x16
-		1 		64x32 	 	32x32
-		2 		32x64 	 	64x64
-		3 		64x64 	  	128x128
-	
-	Wrap: if set, wraps background vertically and horizontally on display
-	SBB :	Screen Base Block.Values 0-31 base screenblock for map indexing
-	CM	: 	Color Mode. 0 = 16 colors (4bpp), 1 = 256 colors (8bpp) 
-	Mos : 	If set, enables mosaic effect
-	CBB :	Character Base Block.Values 0-31 base character block for tile/character indexing
-	P   : 	Determines priority of background (used for draw order 0-3)	
-
-*/
-volatile unsigned short* bg0_control = (volatile unsigned short*) 0x4000008;
-volatile unsigned short* bg1_control = (volatile unsigned short*) 0x400000a;
-volatile unsigned short* bg2_control = (volatile unsigned short*) 0x400000c;
-volatile unsigned short* bg3_control = (volatile unsigned short*) 0x400000e;
-/*
-	Background scroll registers
-		Write Only!, determines the offset of the drawing area of the background
-*/
-volatile short* bg0_x_scroll = (volatile short*) 0x4000010;
-volatile short* bg0_y_scroll = (volatile short*) 0x4000012;
-volatile short* bg1_x_scroll = (volatile short*) 0x4000014;
-volatile short* bg1_y_scroll = (volatile short*) 0x4000016;
-volatile short* bg2_x_scroll = (volatile short*) 0x4000018;
-volatile short* bg2_y_scroll = (volatile short*) 0x400001a;
-volatile short* bg3_x_scroll = (volatile short*) 0x400001c;
-volatile short* bg3_y_scroll = (volatile short*) 0x400001e;
 /*
 	Palettes are used to store all colors used by an image
 	- background palette is at 0500:0000h 

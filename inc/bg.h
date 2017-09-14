@@ -39,7 +39,42 @@
 //Bacground wrap flags
 #define BG_WRAP 1
 #define BG_NO_WRAP 0 
+/*
+	Background control registers (2 bytes so short)
 
+	Bits   |F E  | D    |C B A 9 8 |7   |6	 |5 4	| 3 2	| 1 0
+	Field  |Size |Wrap  |SBB 	   |CM  |Mos | 	~ 	| CBB 	| P	
+	
+	Size:		Regular		Affine 	(tile wxh)
+		0 	 	32x32 		16x16
+		1 		64x32 	 	32x32
+		2 		32x64 	 	64x64
+		3 		64x64 	  	128x128
+	
+	Wrap: if set, wraps background vertically and horizontally on display
+	SBB :	Screen Base Block.Values 0-31 base screenblock for map indexing
+	CM	: 	Color Mode. 0 = 16 colors (4bpp), 1 = 256 colors (8bpp) 
+	Mos : 	If set, enables mosaic effect
+	CBB :	Character Base Block.Values 0-31 base character block for tile/character indexing
+	P   : 	Determines priority of background (used for draw order 0-3)	
+
+*/
+volatile unsigned short* bg0_control = (volatile unsigned short*) 0x4000008;
+volatile unsigned short* bg1_control = (volatile unsigned short*) 0x400000a;
+volatile unsigned short* bg2_control = (volatile unsigned short*) 0x400000c;
+volatile unsigned short* bg3_control = (volatile unsigned short*) 0x400000e;
+/*
+	Background scroll registers
+		Write Only!, determines the offset of the drawing area of the background
+*/
+volatile short* bg0_scroll_x = (volatile short*) 0x4000010;
+volatile short* bg0_scroll_y = (volatile short*) 0x4000012;
+volatile short* bg1_scroll_x = (volatile short*) 0x4000014;
+volatile short* bg1_scroll_y = (volatile short*) 0x4000016;
+volatile short* bg2_scroll_x = (volatile short*) 0x4000018;
+volatile short* bg2_scroll_y = (volatile short*) 0x400001a;
+volatile short* bg3_scroll_x = (volatile short*) 0x400001c;
+volatile short* bg3_scroll_y = (volatile short*) 0x400001e;
 
 /*--------------------------Background Utilities---------------------------------
 	load_image and load_map are used to load background information into VRAM
@@ -132,6 +167,30 @@ inline void bg_map_load(struct bg_map map, unsigned int screen_block_n)
 	// 	block[i] = map.data[i];
 	// }
 	memcpy_dma16((unsigned short*) screen_block(screen_block_n), (unsigned short*)map.data, (map.width * map.height));
+
+}
+
+/*
+	bg_set_offset
+		Sets the scroll offset of the background bg_index (0-3)
+*/
+inline void bg_set_scroll(int bg_index, int offset_x, int offset_y)
+{
+	switch(bg_index)
+	{
+		case 0: *bg0_scroll_x = offset_x; 
+				*bg0_scroll_y = offset_y;
+				break;
+		case 1: *bg1_scroll_x = offset_x; 
+				*bg1_scroll_y = offset_y;
+				break;
+		case 2: *bg2_scroll_x = offset_x; 
+				*bg2_scroll_y = offset_y;
+				break;
+		case 3: *bg3_scroll_x = offset_x; 
+				*bg3_scroll_y = offset_y;
+				break;
+		}
 
 }
 
