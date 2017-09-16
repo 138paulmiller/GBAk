@@ -1,11 +1,12 @@
 #ifndef INTERRUPT_H
 #define INTERRUPT_H
 //Interrupt table, each element points to an interrupt callback
-/* interrupt callbacks*/
+// interrupt callbacks
 void interrupt_ignore( ) {
-    /* do nothing */
+    // do nothing by default
 }
 
+//Table of function addresses where the GBA will jump to on interrupt
 void (*const interrupt_table[13])( ) = {
     interrupt_ignore,   // V Blank interrupt 
     interrupt_ignore,   // H Blank interrupt 

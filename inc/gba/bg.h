@@ -1,10 +1,10 @@
 
-#include <gba.h>
 #ifndef BG_H
 #define BG_H
+#include <gba/util.h>
 
 /*
-	Contains Background and Background Image Utilities
+	Contains Background Utilities for loading background images and map data
 
 */
 //Bacground size properties (number of tiles)
@@ -34,11 +34,18 @@
 #define BG2 0x400
 #define BG3 0x800
 
-//256 color mode
-#define COLOR_MODE 1 
 //Bacground wrap flags
 #define BG_WRAP 1
 #define BG_NO_WRAP 0 
+
+
+/*
+	Palettes are used to store all colors used by an image
+	- background palette is at 0500:0000h 
+ 	- sprite palette is at 0500:0200h
+	- 0x0200 is 256 bytes
+*/
+volatile unsigned short* palette_background = (volatile unsigned short*) 0x05000000;
 /*
 	Background control registers (2 bytes so short)
 
@@ -135,38 +142,20 @@ inline void bg_set(volatile unsigned short *bg_control, unsigned int char_block_
 */
 inline void bg_load(struct bg bg, unsigned int char_block_n)
 {
-	// //load the palette data into memory
-	// for(int i=0; i < PALETTE_SIZE; i++){
-	// 	palette_background[i]= bg.palette[i];
-	// }
-	// //read image data as shorts, vram addr are shorts, 2 bytes
-	// unsigned short* data = (unsigned short*)bg.img_data;
-	// //get the address of the character block to use
-	// unsigned short* block = char_block(char_block_n);
-	// //image data is an array of chars(1byte) but read as an array of shorts(2bytes). 
-	// //	(short array is half the length ) so divide char length by 2
-	// unsigned int len  =((bg.width * bg.height) / 2);
-	// for (int i = 0; i < len; i++) {
-	// 	block[i] = data[i];
-	// }
-	memcpy_dma16((unsigned short*)palette_background, (unsigned short*)bg.palette, PALETTE_SIZE*sizeof(short));
-	memcpy_dma16((unsigned short*)char_block(char_block_n), (unsigned short*)bg.img_data, (bg.width * bg.height)*sizeof(short));
+	//read image and palette data as shorts, vram addr are shorts, 2 bytes
+	dma16_transfer((unsigned short*)palette_background, (unsigned short*)bg.palette, PALETTE_SIZE*sizeof(short));
+	dma16_transfer((unsigned short*)char_block(char_block_n), (unsigned short*)bg.img_data, (bg.width * bg.height)*sizeof(short));
 }
 
 /*
-	Loads the map from the tiles in the background screen_block
+	Loads the map from the tiles in the background screen_block (0-31)	
 */
 
 inline void bg_map_load(struct bg_map map, unsigned int screen_block_n)
 {
-
-	// unsigned short* block = screen_block(screen_block_n); 
-	// //loads tile index data into screen block
-	// unsigned int len  =(map.width * map.height);
-	// for (int i=0; i < len; i++){
-	// 	block[i] = map.data[i];
-	// }
-	memcpy_dma16((unsigned short*) screen_block(screen_block_n), (unsigned short*)map.data, (map.width * map.height));
+	//read map data as shorts, vram addr are shorts, 2 bytes
+	//load map data directly into nth screen block
+	dma16_transfer((unsigned short*) screen_block(screen_block_n), (unsigned short*)map.data, (map.width * map.height));
 
 }
 

@@ -1,9 +1,7 @@
 #include <time.h>
 
-#include <gba.h>
-#include <interrupt.h>
-#include <bg.h>
-#include <sprite.h>
+#include <gba/gba.h>
+
 
 #include <img/bg_img0.h>
 #include <img/map_data0.h>
@@ -14,6 +12,7 @@
 
 
 #define BORDER 50
+
 int main( ) { 
 	clock_t clock_start ; 
     *display_control = MODE0 | BG0 | SPRITE_ENABLE | SPRITE_MAP_1D;

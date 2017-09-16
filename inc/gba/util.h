@@ -1,9 +1,14 @@
-#ifndef GBA_H
-#define GBA_H
+#ifndef UTIL_H
+#define UTIL_H
 
-#include <string.h>
+
+//Screen size
 #define SCREEN_WIDTH 240
 #define SCREEN_HEIGHT 160
+
+//Images in memory are represented as 8x8 tiles 
+#define TILE_WIDTH 8
+#define TILE_HEIGHT 8
 //Display Control flags
 // tile modes 
 #define MODE0 0x00
@@ -13,13 +18,10 @@
 #define MODE3 0x03
 #define MODE4 0x04
 
+//256 color mode
+#define COLOR_MODE 1 
 // Max number of colors in palette block
 #define PALETTE_SIZE 256
-
-
-
-
-
 //------------------------------------IO Registers---------------------------------------
 /* 
 	VRAM (video ram) is a pointer to base memory addr of where graphics data is stored
@@ -50,26 +52,17 @@ volatile unsigned short* display_status = (volatile unsigned short*) 0x04000004;
 */
 volatile unsigned short* scan_vcount = (volatile unsigned short*) 0x04000006;
 
-/*
-	Palettes are used to store all colors used by an image
-	- background palette is at 0500:0000h 
- 	- sprite palette is at 0500:0200h
-	- 0x0200 is 256 bytes
-*/
-volatile unsigned short* palette_background = (volatile unsigned short*) 0x05000000;
-volatile unsigned short* palette_sprite 	= (volatile unsigned short*) 0x05000200;
 
-/* address where sprite image data is stored */
-volatile unsigned short* sprite_image_block = (volatile unsigned short*) 0x6010000;
-volatile unsigned short* sprite_attribute_block = (volatile unsigned short*) 0x7000000;
+
+
+//--------------------------Button Utilities-----------------------------------------
+
 
 /* the button register holds the bits which indicate whether each button has
  * been pressed - this has got to be volatile as well
  */
 volatile unsigned short* buttons = (volatile unsigned short*) 0x04000130;
 
-
-//--------------------------Button Utilities-----------------------------------------
 /* this function checks whether a particular button has been pressed */
 inline unsigned char button_pressed(unsigned short button) {
     //if the buttons register anded with the button is zero, then button is down
@@ -141,28 +134,53 @@ inline unsigned short* screen_block(unsigned long block_n){
 	//calculate distance from base vram addr
 	return ( unsigned short*)(0x06000000+ block_n*0x800); //0x800 = 2 kb
 }
-//--------------------------DMA Data Format------------------------------------- 
-
-/* flag for turning on DMA */
+//--------------------------DMA (Direct Memory Address)------------------------------------- 
+/*
+	DMA 
+		provides a utility to copy 
+*/
+// flag enables DMA when written to DMA control register 
 #define DMA_ENABLE 0x80000000
 
-/* flags for the sizes to transfer, 16 or 32 bits */
+// DMA transfer size flags
 #define DMA_16 0x00000000
 #define DMA_32 0x04000000
-/* pointer to the DMA source location */
+// DMA register for address of data's source location 
 volatile unsigned int* dma_source = ( unsigned int*) 0x40000D4;
 
-/* pointer to the DMA destination location */
+// DMA register for address of data's destination 
 volatile unsigned int* dma_destination = ( unsigned int*) 0x40000D8;
 
-/* pointer to the DMA count/control */
+//  DMA  control register (32- bit)
+/*
+| 1F | 1E | 1D 1C | 1B | 1A | 19 | 18 17 |16 15 | 14 13 12 11 10 | F E D C B A 9 8 7 6 5 4 3 2 1 0
+| En | I  | Tm    | -  | C  | R  | Sa    | Da   | -              | 		Size 
+ En - enable flag
+ I  - Interrupt request, raises interuupt if set
+ Tm - Timing Mode. Specifies when the transfer should start.
+    00: immediately
+    01: at vblank
+    10: at hblank
+    11: at each scanline?? (unsure untested) 
+ C  - chunk size: if 0 halfword(16bit) else if 1 word(32bit)
+ R  - Repeats at every vblank or hblank if timing mode is set to either
+ Da - Destination adjustment, address behavior after each transfer
+    00: increment after each transfer (default)
+    01: decrement after each transfer
+    10: none; address is fixed
+    11: increment the destination during the transfer, and reset it.
+
+Sa - Source Adjustment. Works just like the two bits for the destination 
+		Except 11 is not a valid opcode.
+Size - the amount of data to be transfered  
+*/
 volatile unsigned int* dma_count = ( unsigned int*) 0x40000DC;
 
 /* copy data using DMA format */
-void memcpy_dma16(unsigned short* dest, unsigned short* source, int amount) {
+void dma16_transfer(unsigned short* dest, unsigned short* source, int size) {
     *dma_source = (unsigned int) source;
     *dma_destination = (unsigned int) dest;
-    *dma_count = amount | DMA_16 | DMA_ENABLE;
+    *dma_count = size | DMA_16 | DMA_ENABLE;
 }
 //--------------------------Miscellaneous------------------------------------- 
 
@@ -177,4 +195,4 @@ inline void vblank_wait( ) {
 inline void delay(unsigned int amount) {
     for (int i = 0; i < amount * 10; i++);
 }
-#endif //GBA_H
+#endif //UTIL_H

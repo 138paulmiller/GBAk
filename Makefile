@@ -19,4 +19,4 @@ $(ELF):
 
 	
 clean:
-	rm elf/$(ELF) $(OUT).gba
+	rm $(wildcard elf/*.elf) $(OUT).gba

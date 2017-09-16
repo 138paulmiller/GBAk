@@ -1,6 +1,6 @@
 #ifndef SPRITE_H
 #define SPRITE_H
-#include <gba.h>
+#include <gba/util.h>
 
 
 /*				size
@@ -34,6 +34,17 @@ enum sprite_size {
 #define SPRITE_MAP_1D 0x40
 #define SPRITE_ENABLE 0x1000
  
+/*
+	Palettes are used to store all colors used by an image
+	- background palette is at 0500:0000h 
+ 	- sprite palette is at 0500:0200h
+	- 0x0200 is 256 bytes
+*/
+volatile unsigned short* palette_sprite 	= (volatile unsigned short*) 0x05000200;
+
+/* address where sprite image data is stored */
+volatile unsigned short* sprite_image_block = (volatile unsigned short*) 0x6010000;
+volatile unsigned short* sprite_attribute_block = (volatile unsigned short*) 0x7000000;
 /*
  	GBA allows for 128 different Sprites each with 4 attribute registers.
 	Sprite reads image data from image loaded into sprite_image memory.
@@ -108,9 +119,9 @@ sprite_load_img
 */
 void sprite_load_img(struct sprite_img img){
 	//load the palette into the sprite palette memory block 
-    memcpy_dma16((unsigned short*) palette_sprite, (unsigned short*) img.palette, PALETTE_SIZE);
+    dma16_transfer((unsigned short*) palette_sprite, (unsigned short*) img.palette, PALETTE_SIZE);
     //load the image into the sprite image memory block 
-    memcpy_dma16((unsigned short*) sprite_image_block, (unsigned short*) img.data, (img.width * img.height) / 2);
+    dma16_transfer((unsigned short*) sprite_image_block, (unsigned short*) img.data, (img.width * img.height) / 2);
 }
 
 /*
@@ -157,7 +168,7 @@ struct sprite_attr* sprite_make_attr(enum sprite_size size, int priority)
 				   	|(0 << 8)   //affine
 				   	|(0 << 10)	//effect
 				   	|(0 << 12) //mosaic
-				  	|(COLOR_MODE << 13) //color mode from GBA.h
+				  	|(COLOR_MODE << 13) //color mode from util.h
 					|((shape_flag & 0x03) << 14); //mask 2 bits of shape
 
 		sprite_attrs[sprite_attr_index].attr1 =
@@ -275,7 +286,7 @@ void sprite_update(struct sprite* sprite){
  updates all sprites by loading entire attr array into vram 
 */
 void sprite_update_all() {
-    memcpy_dma16((unsigned short*) sprite_attribute_block, (unsigned short*) sprite_attrs, SPRITE_NUM * 4);
+    dma16_transfer((unsigned short*) sprite_attribute_block, (unsigned short*) sprite_attrs, SPRITE_NUM * 4);
 }
 #endif
 
