@@ -1,5 +1,4 @@
-# Makefile - to configure set gba to the where gbac is installed 
-
+# Makefile - to configure set gba to the where gbak is installed 
 CC = $(GBAK)/arm/bin/arm-agb-elf-gcc
 OBJCOPY = $(GBAK)/arm/bin/arm-agb-elf-objcopy
 CRT = $(GBAK)/arm/arm-agb-elf/lib/crt0.o

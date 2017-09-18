@@ -110,13 +110,25 @@ inline void put_pixel(int row, int col, unsigned short color) {
 	- Screen blocks are 2 kb
 		VRAM contains 32 Screen Blocks
 	- Character blocks are 16 kb
-		VRAM contains 4 Screen Blocks
+		VRAM contains 4 char Blocks
 	Character Block sre used to store background image data (tileset)
 	Screen Blocks are used to store map data (tilemap)
 	Note:
 	Screen and Character blocks are different ways to access chunks of VRAM,
-		If character block 0 is used, only screen blocks 8-31 are unused 
-		(1 character block is the size 8 screen blocks, 2 vs 16 kb)
+	
+	NOTE: if Char blocks 0 and 1 are used, screen blocks 16-31 are available!
+	
+	BLOCKS:
+	Char		Screen Blocks
+			----------------------------------------
+	0		| 0  | 1  | 2  | 3  | 4  | 5  | 6  | 7  |
+			---------------------------------------
+	1		| 8  | 9  | 10 | 11 | 12 | 13 | 14 | 15 |
+			----------------------------------------
+	2		| 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 |
+			----------------------------------------
+	3		| 24 | 25 | 26 | 27 | 28 | 29 | 30 | 31 |
+			----------------------------------------
 	*/
 
 /*
@@ -177,15 +189,14 @@ Size - the amount of data to be transfered
 volatile unsigned int* dma_count = ( unsigned int*) 0x40000DC;
 
 /* copy data using DMA format */
-void dma16_transfer(unsigned short* dest, unsigned short* source, int size) {
+void dma16_transfer(unsigned short* dest, const unsigned short* source, int size) {
     *dma_source = (unsigned int) source;
     *dma_destination = (unsigned int) dest;
     *dma_count = size | DMA_16 | DMA_ENABLE;
 }
 //--------------------------Miscellaneous------------------------------------- 
 
-
-/* wait for the screen to be in vblank, finished drawing */
+// wait for the screen to be in vblank
 inline void vblank_wait( ) {
     /* wait until all 160 lines have been updated */
     while (*scan_vcount >= 160);

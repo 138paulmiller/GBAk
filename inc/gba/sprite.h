@@ -29,9 +29,11 @@ enum sprite_size {
 
 #define SPRITE_NUM 128
 
-// sprite flags used in display control
+// sprite image mapping 2D maps image as 2D 8x8 tiles as image 
 #define SPRITE_MAP_2D 0x0
+//sprite map 1D reads row of 8x8 tiles in image as image
 #define SPRITE_MAP_1D 0x40
+//enable main display control to draw sprites
 #define SPRITE_ENABLE 0x1000
  
 /*
@@ -92,10 +94,12 @@ struct sprite {
     int delay;
     //number of frames until we flip 
     int counter;
-    // the width of each frame in sprite
-    int width;
+    // the dimensions of sprite
+    int width, height;
     //0 if sprite is not moving 
     char is_moving;
+	//velocity on xy axes
+    int vel_x, vel_y; 
 
 };
 /*
@@ -126,15 +130,17 @@ void sprite_load_img(struct sprite_img img){
 
 /*
 sprite_init
-	Initialize sprite attributtes. 
+	Initialize sprite attributtes and structure
 */
-void sprite_init(struct sprite* sprite, struct sprite_attr* attr, int width, int frame_count)
+void sprite_init(struct sprite* sprite, struct sprite_attr* attr, int width, int height, int frame_count)
 {
+	//point to sprite attr from array
 	sprite->attr = attr;
-		//defults to zero
-	sprite->frame =  sprite->counter = sprite->is_moving= 0;
+		//defaults to zero
+	sprite->vel_x = sprite->vel_y = sprite->frame =  sprite->counter = sprite->is_moving= 0;
 	sprite->delay = 10; //default wait 10 updates before next frame 
 	sprite->width = width;
+	sprite->height = height;
 	sprite->frame_count = frame_count;
 }
 
@@ -265,6 +271,8 @@ sprite_update
 */
 void sprite_update(struct sprite* sprite){
 	if(sprite->is_moving) {
+		sprite->x += sprite->vel_x;
+		sprite->y += sprite->vel_y;
         sprite->counter++;
         if (sprite->counter >= sprite->delay) {
             sprite->frame = sprite->frame + sprite->width;
