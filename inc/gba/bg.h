@@ -211,7 +211,7 @@ inline void bg_set_scroll(int bg_index, int offset_x, int offset_y)
 	get_tile
 		returns tile id at the given x,y screen coord
 */
-inline unsigned short get_tile(const struct bg_tilemap* tilemap, int x, int y, 
+inline unsigned short bg_get_tile(const struct bg_tilemap* tilemap, int x, int y, 
 						int scroll_x, int scroll_y) {
 
     //offset by scroll
@@ -222,20 +222,6 @@ inline unsigned short get_tile(const struct bg_tilemap* tilemap, int x, int y,
     // each tile 8x8 so divide screen by 8 to get 1x1 index
     x >>= 3;
     y >>= 3;
-
-    //wraparound?
-    // while (x >= tiletilemap_w) {
-    //     x -= tiletilemap_w;
-    // }
-    // while (y >= tiletilemap_h) {
-    //     y -= tiletilemap_h;
-    // }
-    // while (x < 0) {
-    //     x += tiletilemap_w;
-    // }
-    // while (y < 0) {
-    //     y += tiletilemap_h;
-    // }
 
     // return the tile at the 2d->1d transformed index
     return tilemap->data[y * tilemap->width + x];

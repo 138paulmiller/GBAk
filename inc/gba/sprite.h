@@ -96,8 +96,10 @@ struct sprite {
     int counter;
     // the dimensions of sprite
     int width, height;
-    //0 if sprite is not moving 
+    //0 if sprite is not moving or falling 
     char is_moving;
+    //action flag
+    int is_action;
 	//velocity on xy axes
     int vel_x, vel_y; 
 
@@ -137,7 +139,7 @@ void sprite_init(struct sprite* sprite, struct sprite_attr* attr, int width, int
 	//point to sprite attr from array
 	sprite->attr = attr;
 		//defaults to zero
-	sprite->vel_x = sprite->vel_y = sprite->frame =  sprite->counter = sprite->is_moving= 0;
+	sprite->vel_x = sprite->vel_y = sprite->frame =  sprite->counter = sprite->is_moving = sprite->is_action= 0;
 	sprite->delay = 10; //default wait 10 updates before next frame 
 	sprite->width = width;
 	sprite->height = height;
@@ -202,13 +204,21 @@ void sprite_set_pos(struct sprite* sprite, int x, int y) {
     // clear lower 8 bits of attr0
     sprite->attr->attr0 &= 0xff00;
     // set the new y pos in lower 8 bits by clearing the upper bits 8 of x
-    sprite->attr->attr0 |= ( sprite->y & 0xff);
+    sprite->attr->attr0 |= ( y & 0xff);
     // clear lower 9 bits of attr1
     sprite->attr->attr1 &= 0xfe00;
     // set the new x pos in lower 9 bits by clearing the upper bits 7 of x
-    sprite->attr->attr1 |= ( sprite->x & 0x1ff);
+    sprite->attr->attr1 |= ( x & 0x1ff);
 }
-
+/*
+sprite_get_pos 
+	returns pos of sprite used in vram
+*/
+void sprite_get_pos(struct sprite* sprite, int *x, int *y)
+{
+	*x = sprite->attr->attr1 & 0x01ff;
+	*y = sprite->attr->attr0 & 0x00ff;
+}
 
 /*
 	sprite_set_offset
@@ -270,24 +280,30 @@ sprite_update
 	Update sprite position and current image frame. 
 */
 void sprite_update(struct sprite* sprite){
-	if(sprite->is_moving) {
-		sprite->x += sprite->vel_x;
-		sprite->y += sprite->vel_y;
-        sprite->counter++;
+	
+	if(sprite->is_moving ) { //if moving, update animation
+		sprite->counter++;
         if (sprite->counter >= sprite->delay) {
             sprite->frame = sprite->frame + sprite->width;
             if (sprite->frame > (sprite->frame_count-1)*sprite->width) {
                 sprite->frame = 0;
             }
-            sprite_set_offset(sprite, sprite->frame);
             sprite->counter = 0;
         }
-    	sprite_set_pos(sprite, sprite->x>>8, sprite->y>>8);
-    }else{
-    	 sprite->frame = 0; //set to idle frame
-        sprite_set_offset(sprite, sprite->frame);
-
+    
+		//sprite->x += sprite->vel_x;
+		//sprite->y += sprite->vel_y;
+		sprite_set_pos(sprite, (sprite->x>>8), (sprite->y>>8)); 
     }
+    else if(sprite->is_action)
+    {
+    	 sprite->frame = 0; //set to action frame!
+    }
+    else
+    {
+    	 sprite->frame = 0; //set to idle frame
+    }
+    sprite_set_offset(sprite, sprite->frame);
 }
 /*
  sprite_update_all
