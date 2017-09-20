@@ -86,7 +86,7 @@ unsigned int sprite_attr_index=0;
 struct sprite {
     // sprite attribute index
     struct sprite_attr* attr;
-	//pos 
+	//pos in 1/256 space
     int x, y; 
     //  animation frame and frame count
     int frame, frame_count;
@@ -96,8 +96,10 @@ struct sprite {
     int counter;
     // the dimensions of sprite
     int width, height;
-    //0 if sprite is not moving or falling 
+    //if moving
     char is_moving;
+    //0 if sprite is not  falling 
+    char is_falling;
     //action flag
     int is_action;
 	//velocity on xy axes
@@ -123,7 +125,7 @@ struct sprite_img
 sprite_load_img
 	Loads sprite image into vram. 
 */
-void sprite_load_img(struct sprite_img img){
+inline void sprite_load_img(struct sprite_img img){
 	//load the palette into the sprite palette memory block 
     dma16_transfer((unsigned short*) palette_sprite, (unsigned short*) img.palette, PALETTE_SIZE);
     //load the image into the sprite image memory block 
@@ -134,12 +136,14 @@ void sprite_load_img(struct sprite_img img){
 sprite_init
 	Initialize sprite attributtes and structure
 */
-void sprite_init(struct sprite* sprite, struct sprite_attr* attr, int width, int height, int frame_count)
+inline void sprite_init(struct sprite* sprite, struct sprite_attr* attr, int width, int height, int frame_count)
 {
 	//point to sprite attr from array
 	sprite->attr = attr;
 		//defaults to zero
-	sprite->vel_x = sprite->vel_y = sprite->frame =  sprite->counter = sprite->is_moving = sprite->is_action= 0;
+	sprite->vel_x = sprite->vel_y =0;
+	sprite->frame = sprite->counter =0;  
+	sprite->is_falling = sprite->is_action= sprite->is_moving = 0;
 	sprite->delay = 10; //default wait 10 updates before next frame 
 	sprite->width = width;
 	sprite->height = height;
@@ -199,7 +203,7 @@ struct sprite_attr* sprite_make_attr(enum sprite_size size, int priority)
 sprite_set_pos
 	sets sprite position on screen 
 */
-void sprite_set_pos(struct sprite* sprite, int x, int y) {
+inline void sprite_set_pos(struct sprite* sprite, int x, int y) {
  
     // clear lower 8 bits of attr0
     sprite->attr->attr0 &= 0xff00;
@@ -214,7 +218,7 @@ void sprite_set_pos(struct sprite* sprite, int x, int y) {
 sprite_get_pos 
 	returns pos of sprite used in vram
 */
-void sprite_get_pos(struct sprite* sprite, int *x, int *y)
+inline void sprite_get_pos(struct sprite* sprite, int *x, int *y)
 {
 	*x = sprite->attr->attr1 & 0x01ff;
 	*y = sprite->attr->attr0 & 0x00ff;
@@ -224,7 +228,7 @@ void sprite_get_pos(struct sprite* sprite, int *x, int *y)
 	sprite_set_offset
 	 update the tile offset of a sprite (current image frame)
 */
-void sprite_set_offset(struct sprite* sprite, int offset) {
+inline void sprite_set_offset(struct sprite* sprite, int offset) {
     /* clear the old offset */
     sprite->attr->attr2 &= 0xfc00;
     /* apply the new one */
@@ -235,9 +239,9 @@ void sprite_set_offset(struct sprite* sprite, int offset) {
 sprite_move_by
 	Move sprites position by dx, dy
 */
-void sprite_move_by(struct sprite* sprite, int dx, int dy) {
+inline void sprite_move_by(struct sprite* sprite, int dx, int dy) {
     //add by deltas
-    sprite_set_pos(sprite,  sprite->x + dx,  sprite->y + dy);
+    sprite_set_pos(sprite, ( sprite->x + dx) >>8,  (sprite->y + dy)>>8);
 }
 
 
@@ -245,7 +249,7 @@ void sprite_move_by(struct sprite* sprite, int dx, int dy) {
  sprite_flip
  	flips image of sprite 1 = flip. 0 = not flipped
 */
-void sprite_flip(struct sprite* sprite, int h_flip, int v_flip){
+inline void sprite_flip(struct sprite* sprite, int h_flip, int v_flip){
 	//Attr1 | 0 0 V  H  |0 0 0 0 |0 0 0 0 |0 0 0 0
 	// 	H	| 1 1 1  0  |1 1 1 1 |1 1 1 1 |1 1 1 1 = clear: & 0xEFFF set: | 0x1000 
 	// 	V	| 1 1 0  1  |1 1 1 1 |1 1 1 1 |1 1 1 1 = clear: & 0xDFFF set: | 0x2000
@@ -264,7 +268,7 @@ void sprite_flip(struct sprite* sprite, int h_flip, int v_flip){
  sprite_clear_all
  clear all sprites data 
 */
-void sprite_clear_all() {
+inline void sprite_clear_all() {
     /* clear the index counter */
     sprite_attr_index = 0;
     /* move all sprites offscreen to hide them */
@@ -280,28 +284,36 @@ sprite_update
 	Update sprite position and current image frame. 
 */
 void sprite_update(struct sprite* sprite){
+	sprite->x += sprite->vel_x;
+	sprite->y += sprite->vel_y;
+	//divide pos by 8 to screen coords
+	sprite_set_pos(sprite, (sprite->x>>8), (sprite->y>>8)); 	
 	
-	if(sprite->is_moving ) { //if moving, update animation
-		sprite->counter++;
-        if (sprite->counter >= sprite->delay) {
-            sprite->frame = sprite->frame + sprite->width;
-            if (sprite->frame > (sprite->frame_count-1)*sprite->width) {
-                sprite->frame = 0;
-            }
-            sprite->counter = 0;
-        }
-    
-		//sprite->x += sprite->vel_x;
-		//sprite->y += sprite->vel_y;
-		sprite_set_pos(sprite, (sprite->x>>8), (sprite->y>>8)); 
+	if(sprite->is_moving) 
+	{
+ 		if(sprite->is_action)
+	    {
+	    	 sprite->frame = 0; //set to action frame!
+	    }
+	    //if moving and not falling
+	    else 
+	    {
+	    	//normal animation
+			sprite->counter++;
+	        if (sprite->counter >= sprite->delay)
+	        {
+	            sprite->frame = sprite->frame + sprite->width;
+	            if (sprite->frame > (sprite->frame_count-1)*sprite->width) 
+	            {
+	                sprite->frame = 0;
+	            }
+	            sprite->counter = 0;
+	        }
+	    }
     }
-    else if(sprite->is_action)
+    else //is falling
     {
-    	 sprite->frame = 0; //set to action frame!
-    }
-    else
-    {
-    	 sprite->frame = 0; //set to idle frame
+    	 sprite->frame = 0;
     }
     sprite_set_offset(sprite, sprite->frame);
 }
@@ -309,7 +321,7 @@ void sprite_update(struct sprite* sprite){
  sprite_update_all
  updates all sprites by loading entire attr array into vram 
 */
-void sprite_update_all() {
+inline void sprite_update_all() {
     dma16_transfer((unsigned short*) sprite_attribute_block, (unsigned short*) sprite_attrs, SPRITE_NUM * 4);
 }
 #endif

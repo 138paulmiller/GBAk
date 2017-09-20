@@ -227,7 +227,6 @@ inline unsigned short bg_get_tile(const struct bg_tilemap* tilemap, int x, int y
     return tilemap->data[y * tilemap->width + x];
 }
 
-
 /*
 bg_set_text
 	Draw text on the background at (x, y) with tilemap width w. 
